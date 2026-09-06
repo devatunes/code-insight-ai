@@ -1,11 +1,11 @@
 <mxfile host="app.diagrams.net">
   <diagram id="c1AD9kVV8bcxQxzi1OvW" name="Página-1">
-    <mxGraphModel dx="2068" dy="478" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="950" math="0" shadow="0">
+    <mxGraphModel dx="2020" dy="892" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1200" pageHeight="950" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="client" parent="1" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=#232F3E;fillColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.client;" value="Cliente (navegador)" vertex="1">
-          <mxGeometry height="60" width="60" x="17" y="60" as="geometry" />
+          <mxGeometry height="60" width="60" x="-156" y="392" as="geometry" />
         </mxCell>
         <mxCell id="github" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#F6F8FA;strokeColor=#24292F;strokeWidth=2;fontColor=#24292F;fontStyle=1;fontSize=12;" value="Repositorio Git publico&#xa;(GitHub, GitLab, etc.) - externo, no AWS" vertex="1">
           <mxGeometry height="58" width="190" x="990" y="355" as="geometry" />
@@ -20,13 +20,13 @@
           <mxGeometry height="34" width="34" x="984" y="422" as="geometry" />
         </mxCell>
         <mxCell id="region" parent="1" style="rounded=0;dashed=1;dashPattern=3 3;fillColor=none;strokeWidth=1.5;strokeColor=#879196;verticalAlign=top;align=left;spacingLeft=14;spacingTop=10;fontColor=#5b6675;fontSize=12;fontStyle=1;html=1;" value="AWS • REGION us-east-1" vertex="1">
-          <mxGeometry height="664" width="953" x="-17" y="265" as="geometry" />
+          <mxGeometry height="664" width="953" x="-20" y="256" as="geometry" />
         </mxCell>
         <mxCell id="cloudfront" parent="region" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;" value="CloudFront" vertex="1">
-          <mxGeometry height="78" width="78" x="25" y="132" as="geometry" />
+          <mxGeometry height="78" width="78" x="30" y="127" as="geometry" />
         </mxCell>
         <mxCell id="s3" parent="region" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#7AA116;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.bucket;" value="S3 – frontend Angular" vertex="1">
-          <mxGeometry height="78" width="75" x="26.5" y="330" as="geometry" />
+          <mxGeometry height="78" width="75" x="31.5" y="327" as="geometry" />
         </mxCell>
         <mxCell id="vpc" parent="region" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc2;strokeColor=#8C4FFF;fillColor=none;verticalAlign=top;align=left;spacingLeft=34;spacingTop=6;fontColor=#6929C4;dashed=0;" value="VPC PRIVADA • 10.30.0.0/16" vertex="1">
           <mxGeometry height="480" width="720" x="208" y="35" as="geometry" />
@@ -58,32 +58,32 @@
         <mxCell id="ecr" parent="region" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ecr;" value="ECR – imagen backend" vertex="1">
           <mxGeometry height="78" width="78" x="698" y="545" as="geometry" />
         </mxCell>
-        <mxCell id="legend-swatch1" edge="1" parent="1" style="html=1;endArrow=none;strokeColor=#ED7100;strokeWidth=2.5;">
+        <mxCell id="legend-text1" parent="region" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#ED7100;fontStyle=1;" value="trafico real a internet (via NAT)" vertex="1">
+          <mxGeometry height="18" width="210" x="44" y="646" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-swatch1" edge="1" parent="region" style="html=1;endArrow=none;strokeColor=#ED7100;strokeWidth=2.5;">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="-25" y="917" as="sourcePoint" />
-            <mxPoint x="5" y="917" as="targetPoint" />
+            <mxPoint x="6" y="655" as="sourcePoint" />
+            <mxPoint x="36" y="655" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="legend-text1" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#ED7100;fontStyle=1;" value="trafico real a internet (via NAT)" vertex="1">
-          <mxGeometry height="18" width="210" x="13" y="908" as="geometry" />
+        <mxCell id="legend-text2" parent="region" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#5b6675;fontStyle=0;" value="privado, via VPC Endpoint (nunca sale a internet)" vertex="1">
+          <mxGeometry height="18" width="330" x="330.5" y="646" as="geometry" />
         </mxCell>
-        <mxCell id="legend-swatch2" edge="1" parent="1" style="html=1;endArrow=none;dashed=1;dashPattern=6 4;strokeColor=#98a4b8;strokeWidth=1.5;">
+        <mxCell id="legend-swatch2" edge="1" parent="region" style="html=1;endArrow=none;dashed=1;dashPattern=6 4;strokeColor=#98a4b8;strokeWidth=1.5;">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="255" y="917" as="sourcePoint" />
-            <mxPoint x="285" y="917" as="targetPoint" />
+            <mxPoint x="292.5" y="655" as="sourcePoint" />
+            <mxPoint x="322.5" y="655" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="legend-text2" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#5b6675;fontStyle=0;" value="privado, via VPC Endpoint (nunca sale a internet)" vertex="1">
-          <mxGeometry height="18" width="330" x="293" y="908" as="geometry" />
+        <mxCell id="legend-text3" parent="region" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#5b6675;fontStyle=0;" value="trafico normal cliente &lt;-&gt; backend (dentro de la app)" vertex="1">
+          <mxGeometry height="18" width="240" x="690" y="646" as="geometry" />
         </mxCell>
-        <mxCell id="legend-swatch3" edge="1" parent="1" style="html=1;endArrow=none;strokeColor=#5b6675;strokeWidth=1.5;">
+        <mxCell id="legend-swatch3" edge="1" parent="region" style="html=1;endArrow=none;strokeColor=#5b6675;strokeWidth=1.5;">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="655" y="917" as="sourcePoint" />
-            <mxPoint x="685" y="917" as="targetPoint" />
+            <mxPoint x="652" y="655" as="sourcePoint" />
+            <mxPoint x="682" y="655" as="targetPoint" />
           </mxGeometry>
-        </mxCell>
-        <mxCell id="legend-text3" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#5b6675;fontStyle=0;" value="trafico normal cliente &lt;-&gt; backend (dentro de la app)" vertex="1">
-          <mxGeometry height="18" width="240" x="693" y="908" as="geometry" />
         </mxCell>
         <mxCell id="e1" edge="1" parent="1" source="client" style="html=1;endArrow=block;strokeColor=#5b6675;strokeWidth=1.5;fontSize=11;fontColor=#5b6675;fontStyle=1;" target="cloudfront" value="HTTPS">
           <mxGeometry relative="1" as="geometry" />
@@ -109,7 +109,9 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e7" edge="1" parent="1" source="fargate" style="html=1;endArrow=block;dashed=1;dashPattern=6 4;strokeColor=#98a4b8;strokeWidth=1.5;fontSize=10.5;fontColor=#5b6675;" target="ssm" value="lee API key">
-          <mxGeometry relative="1" x="0.5" as="geometry" />
+          <mxGeometry relative="1" x="0.5034" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="e8" edge="1" parent="1" source="fargate" style="html=1;endArrow=block;dashed=1;dashPattern=6 4;strokeColor=#98a4b8;strokeWidth=1.5;fontSize=10.5;fontColor=#5b6675;" target="dynamodb" value="historial: get/put">
           <mxGeometry relative="1" x="0.5" as="geometry" />
