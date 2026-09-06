@@ -1,0 +1,5 @@
+@import '@picocss/pico/css/pico.min.css';
+
+body > main {
+  padding-block: 2rem;
+}

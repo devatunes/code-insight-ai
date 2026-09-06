@@ -1,0 +1,7 @@
+# Aplica a los builds de backend y frontend (ver Dockerfile de cada uno)
+**/node_modules
+**/dist
+**/.angular
+.git
+.gitignore
+.env
