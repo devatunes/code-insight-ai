@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="client" parent="1" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;strokeColor=#232F3E;fillColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.client;" value="Cliente (navegador)" vertex="1">
-          <mxGeometry height="60" width="60" x="-92" y="406" as="geometry" />
+          <mxGeometry height="60" width="60" x="17" y="60" as="geometry" />
         </mxCell>
         <mxCell id="github" parent="1" style="rounded=1;arcSize=12;whiteSpace=wrap;html=1;fillColor=#F6F8FA;strokeColor=#24292F;strokeWidth=2;fontColor=#24292F;fontStyle=1;fontSize=12;" value="Repositorio Git publico&#xa;(GitHub, GitLab, etc.) - externo, no AWS" vertex="1">
           <mxGeometry height="58" width="190" x="990" y="355" as="geometry" />
