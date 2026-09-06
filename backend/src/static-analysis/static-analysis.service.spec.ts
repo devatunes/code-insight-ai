@@ -264,3 +264,69 @@ describe('ArchitectureHeuristicsService — hints ampliados (Hexagonal con Infra
     expect(hints.some((h) => h.pattern === 'Microservicios')).toBe(true);
   });
 });
+
+describe('StaticAnalysisService — Elixir como primaryLanguage', () => {
+  let fixtureDir: string;
+  const service = new StaticAnalysisService(
+    new FileTreeService(),
+    new TechDetectorService(),
+    new ArchitectureHeuristicsService(),
+  );
+
+  beforeAll(async () => {
+    fixtureDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-elixir-'));
+    await mkdir(join(fixtureDir, 'lib'), { recursive: true });
+    await writeFile(join(fixtureDir, 'lib', 'application.ex'), '');
+    await writeFile(join(fixtureDir, 'mix.exs'), '');
+  });
+
+  afterAll(async () => {
+    await rm(fixtureDir, { recursive: true, force: true });
+  });
+
+  it('detecta Elixir como lenguaje principal por extensión .ex/.exs', async () => {
+    const facts = await service.analyze(fixtureDir);
+    expect(facts.primaryLanguage).toBe('Elixir');
+  });
+});
+
+describe('StaticAnalysisService — Go (go.mod + Gin, convención de nombre exacto de archivo)', () => {
+  let fixtureDir: string;
+  const service = new StaticAnalysisService(
+    new FileTreeService(),
+    new TechDetectorService(),
+    new ArchitectureHeuristicsService(),
+  );
+
+  beforeAll(async () => {
+    fixtureDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-go-'));
+    await writeFile(
+      join(fixtureDir, 'go.mod'),
+      'module example.com/app\n\nrequire github.com/gin-gonic/gin v1.10.0\n',
+    );
+    // Convención real: paquete por feature, archivos con nombre de ROL
+    // completo (routers.go, models.go), sin sufijo ni carpeta dedicada.
+    await mkdir(join(fixtureDir, 'articles'), { recursive: true });
+    await writeFile(join(fixtureDir, 'articles', 'routers.go'), '');
+    await writeFile(join(fixtureDir, 'articles', 'models.go'), '');
+    await writeFile(join(fixtureDir, 'articles', 'serializers.go'), '');
+  });
+
+  afterAll(async () => {
+    await rm(fixtureDir, { recursive: true, force: true });
+  });
+
+  it('detecta Go + Gin por go.mod', async () => {
+    const facts = await service.analyze(fixtureDir);
+    expect(facts.technologies.some((t) => t.name === 'Go')).toBe(true);
+    expect(facts.technologies.some((t) => t.name === 'Gin')).toBe(true);
+  });
+
+  it('detecta controller/model/dto por nombre EXACTO de archivo (routers.go, models.go), sin carpeta ni sufijo', async () => {
+    const facts = await service.analyze(fixtureDir);
+    const types = facts.components.map((c) => c.type);
+    expect(types).toContain('controller');
+    expect(types).toContain('model');
+    expect(types).toContain('dto');
+  });
+});

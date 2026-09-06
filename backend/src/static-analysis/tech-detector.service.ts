@@ -16,6 +16,14 @@ const FRAMEWORK_DEPENDENCY_HINTS: Record<string, string> = {
   'spring-boot-starter': 'Spring Boot',
 };
 
+const GO_FRAMEWORK_IMPORT_HINTS: Record<string, string> = {
+  'github.com/gin-gonic/gin': 'Gin',
+  'github.com/labstack/echo': 'Echo',
+  'github.com/gofiber/fiber': 'Fiber',
+  'github.com/beego/beego': 'Beego',
+  'github.com/gorilla/mux': 'Gorilla Mux',
+};
+
 /**
  * Lee manifiestos de dependencias (package.json, pom.xml, requirements.txt)
  * para detectar lenguaje/framework a partir de datos declarados por el
@@ -60,6 +68,7 @@ export class TechDetectorService {
     technologies.push(...(await this.detectPython(rootDir, files)));
     technologies.push(...(await this.detectRuby(rootDir, files)));
     technologies.push(...(await this.detectPhp(rootDir, files)));
+    technologies.push(...(await this.detectGo(rootDir, files)));
 
     return technologies;
   }
@@ -151,6 +160,30 @@ export class TechDetectorService {
     return technologies;
   }
 
+  private async detectGo(rootDir: string, files: FileTreeEntry[]): Promise<DetectedTechnology[]> {
+    const goMod = files.find((f) => f.name === 'go.mod');
+    if (!goMod) return [];
+
+    const technologies: DetectedTechnology[] = [
+      { category: 'language', name: 'Go', evidence: 'go.mod presente' },
+    ];
+
+    const content = await this.readSafe(join(rootDir, goMod.path));
+    if (content) {
+      for (const [importPath, frameworkName] of Object.entries(GO_FRAMEWORK_IMPORT_HINTS)) {
+        if (content.includes(importPath)) {
+          technologies.push({
+            category: 'framework',
+            name: frameworkName,
+            evidence: `${goMod.path} declara dependencia "${importPath}"`,
+          });
+        }
+      }
+    }
+
+    return technologies;
+  }
+
   primaryLanguage(filesByExtension: Record<string, number>): string | null {
     const extensionToLanguage: Record<string, string> = {
       '.ts': 'TypeScript',
@@ -168,6 +201,14 @@ export class TechDetectorService {
       '.kts': 'Kotlin',
       '.swift': 'Swift',
       '.scala': 'Scala',
+      '.ex': 'Elixir',
+      '.exs': 'Elixir',
+      '.c': 'C',
+      '.h': 'C',
+      '.cpp': 'C++',
+      '.cc': 'C++',
+      '.hpp': 'C++',
+      '.dart': 'Dart',
     };
 
     let bestExtension: string | null = null;

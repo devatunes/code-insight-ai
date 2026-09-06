@@ -17,6 +17,11 @@ const COMPONENT_RULES: ComponentRule[] = [
   { type: 'adapter', folderNames: ['adapters', 'adapter'] },
   { type: 'use-case', folderNames: ['usecases', 'use-cases', 'usecase'] },
   { type: 'dto', folderNames: ['dto', 'dtos'] },
+  // Convención Go: handlers/routers hacen el rol de "controller" (reciben
+  // la request HTTP), middlewares el de "guard" (interceptan antes del
+  // handler) — nombres que no aparecen en TS/Java pero sí son estándar acá.
+  { type: 'controller', folderNames: ['handlers', 'handler', 'routers', 'router'] },
+  { type: 'guard', folderNames: ['middlewares', 'middleware'] },
 ];
 
 /**
@@ -46,6 +51,30 @@ const FILENAME_SUFFIX_RULES: Array<{ type: string; suffix: string }> = [
 ];
 
 /**
+ * Convención Go de "paquete por feature": el archivo no lleva el nombre
+ * del dominio ni un sufijo — el nombre COMPLETO del archivo es el rol,
+ * repetido igual en cada carpeta (ej. `articles/routers.go` y
+ * `users/routers.go`). Ni carpeta ni sufijo la cubren.
+ */
+const FILENAME_EXACT_RULES: Record<string, string> = {
+  'routers.go': 'controller',
+  'router.go': 'controller',
+  'handlers.go': 'controller',
+  'handler.go': 'controller',
+  'controllers.go': 'controller',
+  'controller.go': 'controller',
+  'services.go': 'service',
+  'service.go': 'service',
+  'repositories.go': 'repository',
+  'repository.go': 'repository',
+  'models.go': 'model',
+  'model.go': 'model',
+  'serializers.go': 'dto',
+  'middlewares.go': 'guard',
+  'middleware.go': 'guard',
+};
+
+/**
  * Detecta componentes y arma evidencia de patrón arquitectónico a partir
  * de convenciones de carpetas y de nombre de archivo — esto es EVIDENCIA
  * que se le pasa a la IA en el prompt, no el veredicto final. La IA decide
@@ -64,9 +93,17 @@ export class ArchitectureHeuristicsService {
         continue;
       }
 
-      const bySuffix = this.matchByFilenameSuffix(file.name.toLowerCase());
+      const fileNameLower = file.name.toLowerCase();
+
+      const bySuffix = this.matchByFilenameSuffix(fileNameLower);
       if (bySuffix) {
         components.push({ type: bySuffix, name: file.name, path: file.path });
+        continue;
+      }
+
+      const byExactName = FILENAME_EXACT_RULES[fileNameLower];
+      if (byExactName) {
+        components.push({ type: byExactName, name: file.name, path: file.path });
       }
     }
 
