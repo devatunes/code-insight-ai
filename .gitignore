@@ -17,9 +17,11 @@ coverage/
 .DS_Store
 *.log
 
-# Presentación de la sustentación — notas de trabajo, no código
+# Presentación de la sustentación y notas de trabajo — no son código ni entregable versionado
 artifacts/*.pptx
 artifacts/SLIDES.md
+artifacts/RETO.md
+artifacts/EMAIL.md
 
 # Terraform (referencia de infraestructura, vive realmente en app-iac)
 **/.terraform/
