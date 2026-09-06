@@ -208,9 +208,9 @@
       <span class="time">~2 min</span>
     </div>
     <ul>
-      <li>Funcionalidades completas: análisis end-to-end + diagrama Mermaid + historial consultable (DynamoDB).</li>
-      <li><strong>Probado contra 23 repos públicos reales</strong> de lenguajes/arquitecturas distintas (Java, Python, Ruby, Go, C#, PHP, Rust, Kotlin, Elixir, Scala, React, Vue, NestJS) — varios bugs de heurística encontrados y corregidos en el camino (ej. Java no detectaba controllers por su convención PascalCase; ahora sí).</li>
-      <li>Límites de seguridad probados de verdad: repo de ~1.5GB (<code>kubernetes/kubernetes</code>) rechazado limpio por el límite de tamaño.</li>
+      <li>Flujo end-to-end real: se pega una URL Git pública → el backend la clona (shallow, con límite de tamaño y timeout) → la heurística local extrae hechos duros (lenguaje, framework, componentes por convención) → Claude interpreta esos hechos y redacta el resumen funcional, la arquitectura inferida (uno de 6 patrones) con su evidencia, los hallazgos (riesgos/recomendaciones), y el diagrama Mermaid.</li>
+      <li>Todo eso se muestra en el frontend Angular (carga → resultado → historial), y cada análisis queda guardado en un historial consultable en DynamoDB.</li>
+      <li>Soporta múltiples lenguajes/frameworks reales de forma determinista: NestJS/Angular, Java/Spring, Python (Django/Flask), Ruby/Rails, PHP/Laravel, Go, y detección de lenguaje para varios más (Rust, Kotlin, Swift, Scala, Dart, C#).</li>
     </ul>
   </section>
 
