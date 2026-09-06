@@ -168,6 +168,14 @@ export class TechDetectorService {
       '.kts': 'Kotlin',
       '.swift': 'Swift',
       '.scala': 'Scala',
+      '.ex': 'Elixir',
+      '.exs': 'Elixir',
+      '.c': 'C',
+      '.h': 'C',
+      '.cpp': 'C++',
+      '.cc': 'C++',
+      '.hpp': 'C++',
+      '.dart': 'Dart',
     };
 
     let bestExtension: string | null = null;

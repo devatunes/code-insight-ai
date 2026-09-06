@@ -264,3 +264,28 @@ describe('ArchitectureHeuristicsService — hints ampliados (Hexagonal con Infra
     expect(hints.some((h) => h.pattern === 'Microservicios')).toBe(true);
   });
 });
+
+describe('StaticAnalysisService — Elixir como primaryLanguage', () => {
+  let fixtureDir: string;
+  const service = new StaticAnalysisService(
+    new FileTreeService(),
+    new TechDetectorService(),
+    new ArchitectureHeuristicsService(),
+  );
+
+  beforeAll(async () => {
+    fixtureDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-elixir-'));
+    await mkdir(join(fixtureDir, 'lib'), { recursive: true });
+    await writeFile(join(fixtureDir, 'lib', 'application.ex'), '');
+    await writeFile(join(fixtureDir, 'mix.exs'), '');
+  });
+
+  afterAll(async () => {
+    await rm(fixtureDir, { recursive: true, force: true });
+  });
+
+  it('detecta Elixir como lenguaje principal por extensión .ex/.exs', async () => {
+    const facts = await service.analyze(fixtureDir);
+    expect(facts.primaryLanguage).toBe('Elixir');
+  });
+});
