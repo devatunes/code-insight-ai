@@ -74,22 +74,23 @@ monorepos tipo `backend/`+`frontend/`):
 | `requirements.txt` / `pyproject.toml` / `Pipfile` / `setup.py` / `manage.py` | Python | Django (por `manage.py` o por manifiesto), Flask |
 | `Gemfile` | Ruby | Ruby on Rails |
 | `composer.json` | PHP | Laravel |
+| `go.mod` | Go | Gin, Echo, Fiber, Beego, Gorilla Mux |
 
 El lenguaje **principal** (`primaryLanguage`) además se calcula por conteo
-de extensión de archivo, y cubre más lenguajes que los de la tabla (Go,
-C#, Rust, Kotlin, Swift, Scala) aunque todavía no tengan detección de
-framework — Go en particular tampoco tiene convención de componentes
-propia (ver [Qué haría con más tiempo](#qué-haría-con-más-tiempo)).
+de extensión de archivo, y cubre más lenguajes que los de la tabla (C#,
+Rust, Kotlin, Swift, Scala, Dart) aunque todavía no tengan detección de
+framework propia (ver [Qué haría con más tiempo](#qué-haría-con-más-tiempo)).
 
 **Componentes** (`architecture-heuristics.service.ts`) — por carpeta
 (`controllers/`, `services/`, `repositories/`, `models/`/`entities/`,
 `ports/`, `adapters/`, `use-cases/`, `dto/`, `components/`) **o** por
-sufijo de nombre de archivo, cubriendo dos convenciones reales distintas:
+nombre de archivo, cubriendo tres convenciones reales distintas:
 
 | Convención | Ejemplo | Lenguaje típico |
 |---|---|---|
-| `.controller.ts`, `.service.ts`, `.module.ts`, `.guard.ts`, `.strategy.ts`, `.component.ts` | `assessments.controller.ts` | TypeScript (NestJS/Angular) |
-| `Controller.java`, `Service.java`, `Repository.java`, `Entity.java`, `Dto.java` (PascalCase, sin punto) | `OwnerController.java` | Java (Spring) |
+| Sufijo `.controller.ts`, `.service.ts`, `.module.ts`, `.guard.ts`, `.strategy.ts`, `.component.ts` | `assessments.controller.ts` | TypeScript (NestJS/Angular) |
+| Sufijo `Controller.java`, `Service.java`, `Repository.java`, `Entity.java`, `Dto.java` (PascalCase, sin punto) | `OwnerController.java` | Java (Spring) |
+| Nombre de archivo completo (`routers.go`, `handlers.go`, `services.go`, `repositories.go`, `models.go`, `serializers.go`, `middlewares.go`) — convención Go de "paquete por feature", donde el nombre del archivo entero es el rol, no un sufijo | `articles/routers.go` | Go |
 
 **Arquitectura** — 6 patrones del brief, cada uno con evidencia de carpetas
 (nombres flexibles: Clean Architecture acepta `usecase`/`use-cases`/`app`
@@ -97,12 +98,14 @@ como capa de aplicación e `infrastructure`/`repository`/`delivery`/`adapter`
 como capa de infraestructura; Hexagonal acepta `Infrastructure/` además de
 `adapter/` literal; Microservicios detecta carpetas de nivel superior por
 sufijo — `customers-service`, `api-gateway` — no solo el nombre literal
-`services/`) o de componentes detectados. Probado contra **18 repos
+`services/`) o de componentes detectados. Probado contra **~23 repos
 públicos reales** de lenguajes y arquitecturas distintas (Java/Spring,
 Python/Django y Flask, Ruby/Rails, Go, C#/.NET, PHP/Laravel y Hexagonal,
-React, Vue, Rust, Kotlin, TypeScript/Hexagonal, y monorepos de
-microservicios reales) — ver el historial de commits para el detalle de
-qué falló y qué se corrigió en cada ronda.
+React, Vue, Rust, Kotlin, Elixir/Phoenix, Scala/Play, TypeScript/Hexagonal,
+monorepos de microservicios y monorepos grandes reales, más casos límite
+como un repo casi vacío y dos repos de gran tamaño para probar el límite
+de tamaño de clone) — ver el historial de commits para el detalle de qué
+falló y qué se corrigió en cada ronda.
 
 **Cómo agregar soporte a algo nuevo** (sin tocar el prompt de Claude):
 - Nuevo framework de un lenguaje ya cubierto → una línea en
@@ -111,11 +114,13 @@ qué falló y qué se corrigió en cada ronda.
   `go.mod` para Go) → un bloque nuevo en `detect()` (mismo archivo),
   siguiendo el patrón de `pom.xml`/`requirements.txt`.
 - Nueva convención de nombrado de componentes → una entrada en
-  `FILENAME_SUFFIX_RULES` o `COMPONENT_RULES` (`architecture-heuristics.service.ts`).
+  `FILENAME_SUFFIX_RULES`, `FILENAME_EXACT_RULES` o `COMPONENT_RULES`
+  (`architecture-heuristics.service.ts`).
 
-**Limitación conocida:** Go es el único de los lenguajes probados sin
-detección de framework ni de componentes por convención propia — ver
-[Qué haría con más tiempo](#qué-haría-con-más-tiempo).
+**Limitación conocida:** C#, Rust, Kotlin, Swift, Scala y Dart solo se
+detectan como lenguaje principal (por extensión de archivo) — no tienen
+detección de framework ni convención de componentes propia todavía, a
+diferencia de Go, que sí la tiene (ver tablas arriba).
 
 ## Patrones y arquitectura del backend
 
@@ -263,14 +268,13 @@ nunca en el repo.
 
 ## Qué haría con más tiempo
 
-- Soporte de framework para Go (hoy solo detecta el lenguaje) — probado
-  contra repos reales de Gin/Ktor, la convención de nombrado de
-  componentes en Go no sigue ni carpeta ni sufijo TS/Java/PHP.
+- Ampliar detección de framework/componentes a los lenguajes que hoy solo
+  se detectan por extensión (C#, Rust, Kotlin, Swift, Scala, Dart).
 - Un reporte (no un proceso automático) que cruce, del historial en
   DynamoDB, los casos donde el hint de la heurística difiere del
   veredicto final de Claude — ya queda todo guardado (`facts.architectureHints`
-  vs `ai.inferredArchitecture`), así que es la misma señal que usé a mano
-  para encontrar 3 de los bugs de heurística de esta ronda de pruebas.
+  vs `ai.inferredArchitecture`), así que sería una señal útil para detectar
+  gaps de la heurística sin tener que revisar caso por caso a mano.
   Deliberadamente NO como aprendizaje automático sin supervisión: si
   Claude se equivoca una vez, esa regla se metería como "hecho duro"
   permanente — justo lo contrario de por qué la heurística existe separada
@@ -278,11 +282,16 @@ nunca en el repo.
 - Tests unitarios/e2e de `ingestion`, `ai` y `analysis` (mockeando Claude y
   el filesystem), no solo de `static-analysis`.
 - Completar la carga de ZIP.
-- Activar al menos un segundo proveedor de IA real (probablemente Gemini,
-  por tener tier gratuito) para probar el patrón Strategy con un cambio de
-  variable de entorno en vivo.
+- Activar al menos un segundo proveedor de IA real — probablemente
+  **Ollama** (modelo local), para dar independencia de red/costo en repos
+  sensibles o entornos sin salida a internet, o Gemini por tener tier
+  gratuito — para probar el patrón Strategy con un cambio de variable de
+  entorno en vivo.
 - HTTPS propio en el ALB (hoy CloudFront habla HTTP con el ALB dentro de la
   red de AWS — razonable a este tráfico, pero no es zero-trust interno).
-- Observabilidad real: hoy son los logs básicos de CloudWatch — sin
-  métricas propias ni trazabilidad de una petición de punta a punta entre
-  el clone, la heurística y la llamada a Claude.
+- Observabilidad más profunda: hoy ya hay `Logger` de NestJS en los puntos
+  clave (`git-clone.service.ts`, `analysis.service.ts`,
+  `claude.provider.ts`, `dynamo.module.ts`) y errores tipados
+  (`BadRequestException`, `PayloadTooLargeException`, etc., no throws
+  genéricos) agregados en CloudWatch Logs — falta métricas/dashboards
+  propios (CloudWatch Metrics), tracing distribuido (X-Ray) y alarmas.
