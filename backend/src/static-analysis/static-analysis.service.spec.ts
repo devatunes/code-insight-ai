@@ -136,3 +136,78 @@ describe('StaticAnalysisService — Java/Spring Boot (PascalCase, sin subcarpeta
     expect(facts.architectureHints.some((h) => h.pattern === 'N-Capas')).toBe(true);
   });
 });
+
+describe('StaticAnalysisService — Django sin requirements.txt (manage.py como señal)', () => {
+  let fixtureDir: string;
+  const service = new StaticAnalysisService(
+    new FileTreeService(),
+    new TechDetectorService(),
+    new ArchitectureHeuristicsService(),
+  );
+
+  beforeAll(async () => {
+    fixtureDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-django-'));
+    await writeFile(join(fixtureDir, 'manage.py'), '');
+  });
+
+  afterAll(async () => {
+    await rm(fixtureDir, { recursive: true, force: true });
+  });
+
+  it('detecta Python + Django por manage.py, sin depender de requirements.txt', async () => {
+    const facts = await service.analyze(fixtureDir);
+    expect(facts.technologies.some((t) => t.name === 'Python')).toBe(true);
+    expect(facts.technologies.some((t) => t.name === 'Django')).toBe(true);
+  });
+});
+
+describe('StaticAnalysisService — Ruby on Rails (Gemfile)', () => {
+  let fixtureDir: string;
+  const service = new StaticAnalysisService(
+    new FileTreeService(),
+    new TechDetectorService(),
+    new ArchitectureHeuristicsService(),
+  );
+
+  beforeAll(async () => {
+    fixtureDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-rails-'));
+    await writeFile(join(fixtureDir, 'Gemfile'), "source 'https://rubygems.org'\ngem 'rails', '~> 7.1'\n");
+  });
+
+  afterAll(async () => {
+    await rm(fixtureDir, { recursive: true, force: true });
+  });
+
+  it('detecta Ruby + Rails por Gemfile', async () => {
+    const facts = await service.analyze(fixtureDir);
+    expect(facts.technologies.some((t) => t.name === 'Ruby')).toBe(true);
+    expect(facts.technologies.some((t) => t.name === 'Ruby on Rails')).toBe(true);
+  });
+});
+
+describe('StaticAnalysisService — PHP/Laravel (composer.json)', () => {
+  let fixtureDir: string;
+  const service = new StaticAnalysisService(
+    new FileTreeService(),
+    new TechDetectorService(),
+    new ArchitectureHeuristicsService(),
+  );
+
+  beforeAll(async () => {
+    fixtureDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-laravel-'));
+    await writeFile(
+      join(fixtureDir, 'composer.json'),
+      JSON.stringify({ require: { 'laravel/framework': '^11.0' } }),
+    );
+  });
+
+  afterAll(async () => {
+    await rm(fixtureDir, { recursive: true, force: true });
+  });
+
+  it('detecta PHP + Laravel por composer.json', async () => {
+    const facts = await service.analyze(fixtureDir);
+    expect(facts.technologies.some((t) => t.name === 'PHP')).toBe(true);
+    expect(facts.technologies.some((t) => t.name === 'Laravel')).toBe(true);
+  });
+});

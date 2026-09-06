@@ -12,7 +12,7 @@ const COMPONENT_RULES: ComponentRule[] = [
   { type: 'service', folderNames: ['services', 'service'] },
   { type: 'repository', folderNames: ['repositories', 'repository', 'repos'] },
   { type: 'model', folderNames: ['models', 'model', 'entities', 'entity'] },
-  { type: 'component-angular', folderNames: ['components'] },
+  { type: 'ui-component', folderNames: ['components'] },
   { type: 'port', folderNames: ['ports', 'port'] },
   { type: 'adapter', folderNames: ['adapters', 'adapter'] },
   { type: 'use-case', folderNames: ['usecases', 'use-cases', 'usecase'] },
@@ -33,7 +33,7 @@ const FILENAME_SUFFIX_RULES: Array<{ type: string; suffix: string }> = [
   { type: 'module', suffix: '.module.ts' },
   { type: 'guard', suffix: '.guard.ts' },
   { type: 'strategy', suffix: '.strategy.ts' },
-  { type: 'component-angular', suffix: '.component.ts' },
+  { type: 'ui-component', suffix: '.component.ts' },
   // Convención Java/Spring: PascalCase pegado al nombre, sin punto
   // (OwnerController.java, PetService.java) — Java es uno de los 2
   // lenguajes de backend que el reto permite explícitamente, así que esto
