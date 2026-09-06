@@ -71,11 +71,15 @@ monorepos tipo `backend/`+`frontend/`):
 |---|---|---|
 | `package.json` (cualquier nivel) | JavaScript/TypeScript | NestJS, Express, Angular, React, Vue, Next.js |
 | `pom.xml` | Java | Spring Boot |
-| `requirements.txt` | Python | Django, Flask |
+| `requirements.txt` / `pyproject.toml` / `Pipfile` / `setup.py` / `manage.py` | Python | Django (por `manage.py` o por manifiesto), Flask |
+| `Gemfile` | Ruby | Ruby on Rails |
+| `composer.json` | PHP | Laravel |
 
 El lenguaje **principal** (`primaryLanguage`) además se calcula por conteo
 de extensión de archivo, y cubre más lenguajes que los de la tabla (Go,
-Ruby, C#, PHP) aunque todavía no tengan detección de framework.
+C#, Rust, Kotlin, Swift, Scala) aunque todavía no tengan detección de
+framework — Go en particular tampoco tiene convención de componentes
+propia (ver [Qué haría con más tiempo](#qué-haría-con-más-tiempo)).
 
 **Componentes** (`architecture-heuristics.service.ts`) — por carpeta
 (`controllers/`, `services/`, `repositories/`, `models/`/`entities/`,
@@ -89,12 +93,16 @@ sufijo de nombre de archivo, cubriendo dos convenciones reales distintas:
 
 **Arquitectura** — 6 patrones del brief, cada uno con evidencia de carpetas
 (nombres flexibles: Clean Architecture acepta `usecase`/`use-cases`/`app`
-como capa de aplicación y `infrastructure`/`repository`/`delivery`/`adapter`
-como capa de infraestructura, no solo los nombres literales) o de
-componentes detectados. Probado contra 5 repos públicos reales de
-distintos lenguajes (Java/Spring, Python/Flask, Node/Express, Go con Clean
-Architecture explícita, y un monorepo de microservicios) — ver el historial
-de commits para el detalle de qué falló y qué se corrigió en cada ronda.
+como capa de aplicación e `infrastructure`/`repository`/`delivery`/`adapter`
+como capa de infraestructura; Hexagonal acepta `Infrastructure/` además de
+`adapter/` literal; Microservicios detecta carpetas de nivel superior por
+sufijo — `customers-service`, `api-gateway` — no solo el nombre literal
+`services/`) o de componentes detectados. Probado contra **18 repos
+públicos reales** de lenguajes y arquitecturas distintas (Java/Spring,
+Python/Django y Flask, Ruby/Rails, Go, C#/.NET, PHP/Laravel y Hexagonal,
+React, Vue, Rust, Kotlin, TypeScript/Hexagonal, y monorepos de
+microservicios reales) — ver el historial de commits para el detalle de
+qué falló y qué se corrigió en cada ronda.
 
 **Cómo agregar soporte a algo nuevo** (sin tocar el prompt de Claude):
 - Nuevo framework de un lenguaje ya cubierto → una línea en
@@ -105,9 +113,9 @@ de commits para el detalle de qué falló y qué se corrigió en cada ronda.
 - Nueva convención de nombrado de componentes → una entrada en
   `FILENAME_SUFFIX_RULES` o `COMPONENT_RULES` (`architecture-heuristics.service.ts`).
 
-**Limitación conocida:** Go, Ruby, C# y PHP solo tienen detección de
-lenguaje, no de framework ni de componentes por convención propia todavía
-— ver [Qué haría con más tiempo](#qué-haría-con-más-tiempo).
+**Limitación conocida:** Go es el único de los lenguajes probados sin
+detección de framework ni de componentes por convención propia — ver
+[Qué haría con más tiempo](#qué-haría-con-más-tiempo).
 
 ## Patrones y arquitectura del backend
 
@@ -255,9 +263,18 @@ nunca en el repo.
 
 ## Qué haría con más tiempo
 
-- Soporte de framework/componentes para Go, Ruby, C# y PHP (hoy solo tienen
-  detección de lenguaje) — ver [Tecnologías y patrones
-  soportados](#tecnologías-y-patrones-soportados) para cómo agregarlo.
+- Soporte de framework para Go (hoy solo detecta el lenguaje) — probado
+  contra repos reales de Gin/Ktor, la convención de nombrado de
+  componentes en Go no sigue ni carpeta ni sufijo TS/Java/PHP.
+- Un reporte (no un proceso automático) que cruce, del historial en
+  DynamoDB, los casos donde el hint de la heurística difiere del
+  veredicto final de Claude — ya queda todo guardado (`facts.architectureHints`
+  vs `ai.inferredArchitecture`), así que es la misma señal que usé a mano
+  para encontrar 3 de los bugs de heurística de esta ronda de pruebas.
+  Deliberadamente NO como aprendizaje automático sin supervisión: si
+  Claude se equivoca una vez, esa regla se metería como "hecho duro"
+  permanente — justo lo contrario de por qué la heurística existe separada
+  de la IA.
 - Tests unitarios/e2e de `ingestion`, `ai` y `analysis` (mockeando Claude y
   el filesystem), no solo de `static-analysis`.
 - Completar la carga de ZIP.
