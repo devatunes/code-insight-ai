@@ -2,9 +2,9 @@
 
 Una sola arquitectura (no una versión "barata" y otra "objetivo" como en
 `assessment-cloud`): pensada para funcionar bien con tráfico bajo y poder
-escalar sin rediseño. Terraform de referencia en
-[`../../app-iac/code-insight.tf`](../../app-iac/code-insight.tf) y
-`modules/*/code-insight`.
+escalar sin rediseño. Copia de solo lectura del Terraform real que la
+desplegó en [`terraform-reference/`](terraform-reference/) (el repo de
+infraestructura del equipo es privado — ver el README de esa carpeta).
 
 ## CloudFront + S3 (frontend)
 

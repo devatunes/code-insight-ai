@@ -9,10 +9,11 @@ y muestra todo — incluido un diagrama — en una interfaz Angular. Cada
 análisis queda guardado en un historial consultable.
 
 - **Código de la app** (backend + frontend): este repositorio.
-- **Infraestructura como código real**: [`app-iac`](../app-iac) (Terraform),
-  módulos `modules/*/code-insight`. Independiente de los demás stacks de esa
-  cuenta (Contably, wedding, el ya destruido Assessment) — no comparte
-  código ni módulos con ninguno.
+- **Infraestructura como código real**: el Terraform que realmente desplegó
+  todo esto vive en el repo privado de infraestructura del equipo (compartido
+  con otros proyectos, no público) — por eso [`artifacts/terraform-reference/`](artifacts/terraform-reference/)
+  trae una copia de solo lectura de esos módulos, sin variables ni secretos
+  de cuenta, para que quede documentado qué se desplegó y por qué.
 - **Desplegado en AWS**: [`d1obit4fp2ujij.cloudfront.net`](https://d1obit4fp2ujij.cloudfront.net)
 
 ## Índice
