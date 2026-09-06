@@ -93,11 +93,16 @@ export class ArchitectureHeuristicsService {
     const lowerFolders = topLevelFolders.map((f) => f.toLowerCase());
     const componentTypes = new Set(components.map((c) => c.type));
 
-    if (componentTypes.has('port') && componentTypes.has('adapter')) {
+    // "adapter" literal es solo una de las formas en que aparece la capa de
+    // infraestructura en un proyecto Ports & Adapters real — muchos usan
+    // "Infrastructure" en su lugar (ver explicit-architecture-php).
+    const hasAdapterLayer =
+      componentTypes.has('adapter') || ['infrastructure', 'infra'].some((f) => lowerFolders.includes(f));
+    if (componentTypes.has('port') && hasAdapterLayer) {
       hints.push({
         pattern: 'Hexagonal',
         confidence: 'high',
-        evidence: ['Se detectaron ports y adapters (por carpeta o por nombre de archivo)'],
+        evidence: ['Se detectaron ports y una capa de adapters/infraestructura (por carpeta o por nombre de archivo)'],
       });
     }
 
@@ -136,13 +141,25 @@ export class ArchitectureHeuristicsService {
       });
     }
 
+    // Un monorepo real de microservicios rara vez tiene una carpeta LITERAL
+    // llamada "services" — suele ser una carpeta por servicio, cada una con
+    // su propio nombre (ej. "customers-service", "api-gateway",
+    // "discovery-server"). Contar cuántas carpetas de nivel superior matchean
+    // ese patrón es más representativo que buscar un nombre exacto.
+    const microserviceFolderSuffixes = ['-service', '-svc', '-api', '-server', '-gateway'];
+    const microserviceLikeFolders = topLevelFolders.filter((f) =>
+      microserviceFolderSuffixes.some((suffix) => f.toLowerCase().endsWith(suffix)),
+    );
     const looksLikeMultiService =
-      lowerFolders.filter((f) => ['services', 'apps', 'packages'].includes(f)).length > 0;
+      lowerFolders.some((f) => ['services', 'apps', 'packages'].includes(f)) || microserviceLikeFolders.length >= 2;
     if (looksLikeMultiService) {
       hints.push({
         pattern: 'Microservicios',
         confidence: 'low',
-        evidence: ['Carpeta de nivel superior sugiere múltiples servicios/paquetes independientes — requiere confirmar que cada uno tenga su propio manifiesto de dependencias'],
+        evidence:
+          microserviceLikeFolders.length >= 2
+            ? [`Varias carpetas de nivel superior con nombre de servicio independiente: ${microserviceLikeFolders.join(', ')} — requiere confirmar que cada una tenga su propio manifiesto de dependencias`]
+            : ['Carpeta de nivel superior sugiere múltiples servicios/paquetes independientes — requiere confirmar que cada uno tenga su propio manifiesto de dependencias'],
       });
     }
 

@@ -211,3 +211,56 @@ describe('StaticAnalysisService — PHP/Laravel (composer.json)', () => {
     expect(facts.technologies.some((t) => t.name === 'Laravel')).toBe(true);
   });
 });
+
+describe('StaticAnalysisService — Rust y Kotlin como primaryLanguage', () => {
+  const service = new StaticAnalysisService(
+    new FileTreeService(),
+    new TechDetectorService(),
+    new ArchitectureHeuristicsService(),
+  );
+  let rustDir: string;
+  let kotlinDir: string;
+
+  beforeAll(async () => {
+    rustDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-rust-'));
+    await writeFile(join(rustDir, 'main.rs'), '');
+
+    kotlinDir = await mkdtemp(join(tmpdir(), 'code-insight-fixture-kotlin-'));
+    await writeFile(join(kotlinDir, 'Main.kt'), '');
+  });
+
+  afterAll(async () => {
+    await rm(rustDir, { recursive: true, force: true });
+    await rm(kotlinDir, { recursive: true, force: true });
+  });
+
+  it('detecta Rust como lenguaje principal por extensión .rs', async () => {
+    const facts = await service.analyze(rustDir);
+    expect(facts.primaryLanguage).toBe('Rust');
+  });
+
+  it('detecta Kotlin como lenguaje principal por extensión .kt', async () => {
+    const facts = await service.analyze(kotlinDir);
+    expect(facts.primaryLanguage).toBe('Kotlin');
+  });
+});
+
+describe('ArchitectureHeuristicsService — hints ampliados (Hexagonal con Infrastructure/, Microservicios por sufijo)', () => {
+  const heuristics = new ArchitectureHeuristicsService();
+
+  it('detecta Hexagonal con carpeta "Infrastructure" en vez de "adapter" literal', () => {
+    const components = [
+      { type: 'port', name: 'UserPort.php', path: 'src/Port/UserPort.php' },
+    ];
+    const hints = heuristics.buildHints(['Infrastructure', 'src'], components);
+    expect(hints.some((h) => h.pattern === 'Hexagonal')).toBe(true);
+  });
+
+  it('detecta Microservicios por sufijo de nombre de carpeta (customers-service, api-gateway), sin nombre literal "services"', () => {
+    const hints = heuristics.buildHints(
+      ['customers-service', 'vets-service', 'api-gateway', 'docs'],
+      [],
+    );
+    expect(hints.some((h) => h.pattern === 'Microservicios')).toBe(true);
+  });
+});

@@ -163,6 +163,11 @@ export class TechDetectorService {
       '.rb': 'Ruby',
       '.cs': 'C#',
       '.php': 'PHP',
+      '.rs': 'Rust',
+      '.kt': 'Kotlin',
+      '.kts': 'Kotlin',
+      '.swift': 'Swift',
+      '.scala': 'Scala',
     };
 
     let bestExtension: string | null = null;
