@@ -1,0 +1,27 @@
+# Dependencias
+node_modules/
+
+# Builds
+backend/dist/
+frontend/dist/
+frontend/.angular/
+coverage/
+
+# Entornos locales (nunca subir credenciales — ni ANTHROPIC_API_KEY ni nada)
+.env
+.env.local
+.env.deploy
+*.local.env
+
+# Sistema
+.DS_Store
+*.log
+
+# Presentación de la sustentación — notas de trabajo, no código
+artifacts/*.pptx
+artifacts/SLIDES.md
+
+# Terraform (referencia de infraestructura, vive realmente en app-iac)
+**/.terraform/
+*.tfstate
+*.tfstate.*

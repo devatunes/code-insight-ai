@@ -1,0 +1,36 @@
+services:
+  # DynamoDB Local — solo para desarrollo. En AWS real la tabla la crea
+  # Terraform (módulo code_insight_database) y el backend usa el endpoint
+  # regional real (DYNAMO_ENDPOINT vacío).
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - '8000:8000'
+    command: ['-jar', 'DynamoDBLocal.jar', '-inMemory', '-sharedDb']
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - '3000:3000'
+    environment:
+      - PORT=3000
+      - AI_PROVIDER=${AI_PROVIDER:-claude}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-5}
+      - ANALYSES_TABLE_NAME=code-insight-analyses
+      - AWS_REGION=us-east-1
+      - DYNAMO_ENDPOINT=http://dynamodb-local:8000
+      # DynamoDB Local acepta cualquier valor no vacío como credenciales.
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
+    depends_on:
+      - dynamodb-local
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - '4200:80'
+    depends_on:
+      - backend

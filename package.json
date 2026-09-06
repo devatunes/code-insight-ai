@@ -1,0 +1,17 @@
+{
+  "name": "code-insight-ai",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "dev:db": "docker compose up -d dynamodb-local",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm start",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test -- --watch=false --browsers=ChromeHeadless",
+    "test": "npm run test:backend && npm run test:frontend",
+    "deploy:back": "./deploy-backend.sh",
+    "deploy:front": "./deploy-frontend.sh",
+    "deploy:all": "npm run deploy:back && npm run deploy:front"
+  }
+}

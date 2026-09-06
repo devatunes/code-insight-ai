@@ -1,0 +1,19 @@
+<section>
+  <p><a routerLink="/">← Nuevo análisis</a></p>
+  <h1>Historial de análisis</h1>
+
+  @if (loading()) {
+    <p>Cargando…</p>
+  } @else if (records().length === 0) {
+    <p>Todavía no se analizó ningún repositorio.</p>
+  } @else {
+    <ul>
+      @for (record of records(); track record.id) {
+        <li>
+          <a [routerLink]="['/result', record.id]">{{ record.facts.projectName }}</a>
+          — {{ record.ai.inferredArchitecture }} — {{ record.createdAt | date: 'short' }}
+        </li>
+      }
+    </ul>
+  }
+</section>
