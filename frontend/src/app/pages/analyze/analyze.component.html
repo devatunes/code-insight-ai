@@ -1,0 +1,29 @@
+<section>
+  <h1>Analizar un repositorio</h1>
+  <p>Pegá la URL pública de un repositorio Git para inferir su arquitectura.</p>
+
+  <form (ngSubmit)="submit()">
+    <label for="repoUrl">URL del repositorio (https://...)</label>
+    <input
+      id="repoUrl"
+      name="repoUrl"
+      type="url"
+      placeholder="https://github.com/usuario/proyecto"
+      [(ngModel)]="repoUrl"
+      required
+    />
+
+    <fieldset disabled>
+      <label for="zipFile">Cargar archivo ZIP (próximamente)</label>
+      <input id="zipFile" type="file" accept=".zip" />
+    </fieldset>
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Analizando…' : 'Analizar repositorio' }}
+    </button>
+  </form>
+
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+</section>
