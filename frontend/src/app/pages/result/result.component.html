@@ -13,11 +13,20 @@
     <h1>{{ r.facts.projectName }}</h1>
     <p><small>{{ r.repoUrl }} — analizado el {{ r.createdAt | date: 'medium' }} con {{ r.aiProvider }}</small></p>
 
+    <h2>Información general</h2>
+    <ul>
+      <li>Lenguaje principal: <strong>{{ r.facts.primaryLanguage ?? 'No detectado' }}</strong></li>
+      <li>
+        Framework principal:
+        <strong>{{ frameworkName(r.facts.technologies) ?? 'No detectado' }}</strong>
+      </li>
+      <li>Cantidad aproximada de archivos: <strong>{{ r.facts.fileCount }}</strong></li>
+    </ul>
+
     <h2>Resumen funcional</h2>
     <p>{{ r.ai.functionalSummary }}</p>
 
     <h2>Tecnologías detectadas</h2>
-    <p>Lenguaje principal: <strong>{{ r.facts.primaryLanguage ?? 'No detectado' }}</strong></p>
     <ul>
       @for (tech of r.facts.technologies; track tech.name) {
         <li>{{ tech.name }} ({{ tech.category }}) — {{ tech.evidence }}</li>

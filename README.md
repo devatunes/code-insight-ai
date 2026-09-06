@@ -18,6 +18,7 @@ análisis queda guardado en un historial consultable.
 ## Índice
 
 - [Cómo funciona el análisis](#cómo-funciona-el-análisis)
+- [Tecnologías y patrones soportados](#tecnologías-y-patrones-soportados)
 - [Patrones y arquitectura del backend](#patrones-y-arquitectura-del-backend)
 - [Proveedores de IA — Strategy/Adapter](#proveedores-de-ia--strategyadapter)
 - [Arquitectura AWS](#arquitectura-aws)
@@ -37,11 +38,13 @@ Es un pipeline híbrido, no "todo se lo preguntamos a la IA":
    se borra siempre al terminar (éxito o error). Nunca se ejecuta código del
    repo analizado, solo se lee su estructura.
 2. **Heurística local** (`backend/src/static-analysis`) — determinista, sin
-   red: cuenta archivos, lee `package.json`/`pom.xml`/`requirements.txt`
-   para detectar lenguaje/framework, y detecta componentes por convención de
-   carpetas (`controllers/`, `services/`, `repositories/`, `ports/`,
-   `adapters/`, etc.). Esto son los **hechos duros** — verificables,
-   testeados con fixtures, nunca inventados.
+   red: cuenta archivos, lee **todos** los manifiestos de dependencias del
+   repo (no solo en la raíz — ver [Tecnologías y patrones
+   soportados](#tecnologías-y-patrones-soportados)) para detectar
+   lenguaje/framework, y detecta componentes por convención de **carpeta**
+   (`controllers/`, `ports/`, `adapters/`...) o por **nombre de archivo**
+   (`*.controller.ts`, `OwnerController.java`...). Esto son los **hechos
+   duros** — verificables, testeados con fixtures, nunca inventados.
 3. **IA** (`backend/src/ai`) — Claude recibe esos hechos como contexto (no
    el código fuente completo) y devuelve, en un único JSON con schema
    forzado (tool use, no texto libre a parsear): el resumen funcional, la
@@ -53,6 +56,66 @@ Es un pipeline híbrido, no "todo se lo preguntamos a la IA":
 Este diseño existe porque uno de los criterios de evaluación es "exactitud
 de hallazgos" — los conteos y detecciones no dependen de que un LLM no
 alucine, dependen de código determinista. La IA solo interpreta y redacta.
+
+## Tecnologías y patrones soportados
+
+Todo lo que sigue es heurística **determinista** (`backend/src/static-analysis`),
+no algo que decide Claude — por eso es exacto, testeado, y extendible sin
+tocar el prompt de la IA.
+
+**Lenguaje/framework** (`tech-detector.service.ts`) — lee **todos** los
+manifiestos de dependencias del repo, no solo el de la raíz (necesario en
+monorepos tipo `backend/`+`frontend/`):
+
+| Manifiesto | Lenguaje | Frameworks detectados |
+|---|---|---|
+| `package.json` (cualquier nivel) | JavaScript/TypeScript | NestJS, Express, Angular, React, Vue, Next.js |
+| `pom.xml` | Java | Spring Boot |
+| `requirements.txt` / `pyproject.toml` / `Pipfile` / `setup.py` / `manage.py` | Python | Django (por `manage.py` o por manifiesto), Flask |
+| `Gemfile` | Ruby | Ruby on Rails |
+| `composer.json` | PHP | Laravel |
+
+El lenguaje **principal** (`primaryLanguage`) además se calcula por conteo
+de extensión de archivo, y cubre más lenguajes que los de la tabla (Go,
+C#, Rust, Kotlin, Swift, Scala) aunque todavía no tengan detección de
+framework — Go en particular tampoco tiene convención de componentes
+propia (ver [Qué haría con más tiempo](#qué-haría-con-más-tiempo)).
+
+**Componentes** (`architecture-heuristics.service.ts`) — por carpeta
+(`controllers/`, `services/`, `repositories/`, `models/`/`entities/`,
+`ports/`, `adapters/`, `use-cases/`, `dto/`, `components/`) **o** por
+sufijo de nombre de archivo, cubriendo dos convenciones reales distintas:
+
+| Convención | Ejemplo | Lenguaje típico |
+|---|---|---|
+| `.controller.ts`, `.service.ts`, `.module.ts`, `.guard.ts`, `.strategy.ts`, `.component.ts` | `assessments.controller.ts` | TypeScript (NestJS/Angular) |
+| `Controller.java`, `Service.java`, `Repository.java`, `Entity.java`, `Dto.java` (PascalCase, sin punto) | `OwnerController.java` | Java (Spring) |
+
+**Arquitectura** — 6 patrones del brief, cada uno con evidencia de carpetas
+(nombres flexibles: Clean Architecture acepta `usecase`/`use-cases`/`app`
+como capa de aplicación e `infrastructure`/`repository`/`delivery`/`adapter`
+como capa de infraestructura; Hexagonal acepta `Infrastructure/` además de
+`adapter/` literal; Microservicios detecta carpetas de nivel superior por
+sufijo — `customers-service`, `api-gateway` — no solo el nombre literal
+`services/`) o de componentes detectados. Probado contra **18 repos
+públicos reales** de lenguajes y arquitecturas distintas (Java/Spring,
+Python/Django y Flask, Ruby/Rails, Go, C#/.NET, PHP/Laravel y Hexagonal,
+React, Vue, Rust, Kotlin, TypeScript/Hexagonal, y monorepos de
+microservicios reales) — ver el historial de commits para el detalle de
+qué falló y qué se corrigió en cada ronda.
+
+**Cómo agregar soporte a algo nuevo** (sin tocar el prompt de Claude):
+- Nuevo framework de un lenguaje ya cubierto → una línea en
+  `FRAMEWORK_DEPENDENCY_HINTS` (`tech-detector.service.ts`).
+- Nuevo lenguaje con su propio manifiesto (ej. `Gemfile` para Ruby,
+  `go.mod` para Go) → un bloque nuevo en `detect()` (mismo archivo),
+  siguiendo el patrón de `pom.xml`/`requirements.txt`.
+- Nueva convención de nombrado de componentes → una entrada en
+  `FILENAME_SUFFIX_RULES` o `COMPONENT_RULES` (`architecture-heuristics.service.ts`).
+
+**Limitación conocida:** Go es el único de los lenguajes probados sin
+detección de framework ni de componentes por convención propia — ver
+[Qué haría con más tiempo](#qué-haría-con-más-tiempo).
 
 ## Patrones y arquitectura del backend
 
@@ -165,11 +228,12 @@ npm test   # backend (vitest) + frontend (karma/jasmine headless)
 
 El backend cubre con tests unitarios la heurística de `static-analysis`
 (conteo de archivos ignorando `node_modules`, detección de framework por
-`package.json`, detección de componentes por carpeta e inferencia de hint
-de arquitectura) contra fixtures generadas en un directorio temporal — sin
-red ni Claude real involucrados. El resto del pipeline (ingestion, ai,
-analysis, history) no tiene tests unitarios propios todavía — ver
-[Qué haría con más tiempo](#qué-haría-con-más-tiempo).
+manifiestos anidados — no solo el de la raíz —, detección de componentes
+por carpeta y por sufijo de archivo en dos convenciones — TypeScript y
+Java —, e inferencia de hint de arquitectura) contra fixtures generadas en
+un directorio temporal — sin red ni Claude real involucrados. El resto del
+pipeline (ingestion, ai, analysis, history) no tiene tests unitarios
+propios todavía — ver [Qué haría con más tiempo](#qué-haría-con-más-tiempo).
 
 ## Desplegar en AWS
 
@@ -199,6 +263,18 @@ nunca en el repo.
 
 ## Qué haría con más tiempo
 
+- Soporte de framework para Go (hoy solo detecta el lenguaje) — probado
+  contra repos reales de Gin/Ktor, la convención de nombrado de
+  componentes en Go no sigue ni carpeta ni sufijo TS/Java/PHP.
+- Un reporte (no un proceso automático) que cruce, del historial en
+  DynamoDB, los casos donde el hint de la heurística difiere del
+  veredicto final de Claude — ya queda todo guardado (`facts.architectureHints`
+  vs `ai.inferredArchitecture`), así que es la misma señal que usé a mano
+  para encontrar 3 de los bugs de heurística de esta ronda de pruebas.
+  Deliberadamente NO como aprendizaje automático sin supervisión: si
+  Claude se equivoca una vez, esa regla se metería como "hecho duro"
+  permanente — justo lo contrario de por qué la heurística existe separada
+  de la IA.
 - Tests unitarios/e2e de `ingestion`, `ai` y `analysis` (mockeando Claude y
   el filesystem), no solo de `static-analysis`.
 - Completar la carga de ZIP.

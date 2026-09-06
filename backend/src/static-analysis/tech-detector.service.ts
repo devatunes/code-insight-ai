@@ -26,9 +26,22 @@ export class TechDetectorService {
   async detect(rootDir: string, files: FileTreeEntry[]): Promise<DetectedTechnology[]> {
     const technologies: DetectedTechnology[] = [];
 
-    const packageJson = files.find((f) => f.path === 'package.json');
-    if (packageJson) {
-      technologies.push(...(await this.detectFromPackageJson(rootDir)));
+    // No solo la raíz: en un monorepo (backend/package.json, frontend/package.json,
+    // sin package.json en la raíz o con uno vacío de solo scripts) el framework
+    // real vive en los manifiestos anidados, no en el de más arriba.
+    const packageJsonFiles = files.filter((f) => f.name === 'package.json');
+    if (packageJsonFiles.length > 0) {
+      technologies.push({ category: 'language', name: 'JavaScript/TypeScript', evidence: 'package.json presente' });
+
+      const seenFrameworks = new Set<string>();
+      for (const packageJson of packageJsonFiles) {
+        const frameworks = await this.detectFrameworksFromPackageJson(rootDir, packageJson.path);
+        for (const framework of frameworks) {
+          if (seenFrameworks.has(framework.name)) continue;
+          seenFrameworks.add(framework.name);
+          technologies.push(framework);
+        }
+      }
     }
 
     const pomXml = files.find((f) => f.path === 'pom.xml');
@@ -44,26 +57,94 @@ export class TechDetectorService {
       }
     }
 
-    const requirementsTxt = files.find((f) => f.path === 'requirements.txt');
-    if (requirementsTxt) {
-      technologies.push({
+    technologies.push(...(await this.detectPython(rootDir, files)));
+    technologies.push(...(await this.detectRuby(rootDir, files)));
+    technologies.push(...(await this.detectPhp(rootDir, files)));
+
+    return technologies;
+  }
+
+  /**
+   * "requirements.txt" es solo UNO de varios manifiestos que un proyecto
+   * Python real puede usar (Pipfile, pyproject.toml, setup.py) — y ninguno
+   * es garantía de encontrar el framework ahí si el repo separa
+   * dependencias en varios archivos. `manage.py` es una señal mucho más
+   * confiable y específica de Django: ese archivo casi no existe fuera de
+   * un proyecto Django.
+   */
+  private async detectPython(rootDir: string, files: FileTreeEntry[]): Promise<DetectedTechnology[]> {
+    const manifestPaths = files
+      .filter((f) => ['requirements.txt', 'pyproject.toml', 'Pipfile', 'setup.py'].includes(f.name))
+      .map((f) => f.path);
+    const hasManagePy = files.some((f) => f.name === 'manage.py');
+
+    if (manifestPaths.length === 0 && !hasManagePy) return [];
+
+    const technologies: DetectedTechnology[] = [
+      {
         category: 'language',
         name: 'Python',
-        evidence: 'requirements.txt presente',
-      });
-      const content = await this.readSafe(join(rootDir, 'requirements.txt'));
-      if (content?.toLowerCase().includes('django')) {
-        technologies.push({
-          category: 'framework',
-          name: 'Django',
-          evidence: 'requirements.txt declara Django',
-        });
-      } else if (content?.toLowerCase().includes('flask')) {
-        technologies.push({
-          category: 'framework',
-          name: 'Flask',
-          evidence: 'requirements.txt declara Flask',
-        });
+        evidence: hasManagePy ? 'manage.py presente' : `${manifestPaths[0]} presente`,
+      },
+    ];
+
+    if (hasManagePy) {
+      technologies.push({ category: 'framework', name: 'Django', evidence: 'manage.py presente (señal específica de Django)' });
+    } else {
+      const combinedContent = (
+        await Promise.all(manifestPaths.map((p) => this.readSafe(join(rootDir, p))))
+      )
+        .filter((c): c is string => c !== null)
+        .join('\n')
+        .toLowerCase();
+
+      if (combinedContent.includes('django')) {
+        technologies.push({ category: 'framework', name: 'Django', evidence: `${manifestPaths.join(', ')} declara Django` });
+      } else if (combinedContent.includes('flask')) {
+        technologies.push({ category: 'framework', name: 'Flask', evidence: `${manifestPaths.join(', ')} declara Flask` });
+      }
+    }
+
+    return technologies;
+  }
+
+  private async detectRuby(rootDir: string, files: FileTreeEntry[]): Promise<DetectedTechnology[]> {
+    const gemfile = files.find((f) => f.name === 'Gemfile');
+    if (!gemfile) return [];
+
+    const technologies: DetectedTechnology[] = [
+      { category: 'language', name: 'Ruby', evidence: 'Gemfile presente' },
+    ];
+
+    const content = (await this.readSafe(join(rootDir, gemfile.path)))?.toLowerCase();
+    if (content?.includes("'rails'") || content?.includes('"rails"')) {
+      technologies.push({ category: 'framework', name: 'Ruby on Rails', evidence: 'Gemfile declara la gema rails' });
+    }
+
+    return technologies;
+  }
+
+  private async detectPhp(rootDir: string, files: FileTreeEntry[]): Promise<DetectedTechnology[]> {
+    const composerJson = files.find((f) => f.name === 'composer.json');
+    if (!composerJson) return [];
+
+    const technologies: DetectedTechnology[] = [
+      { category: 'language', name: 'PHP', evidence: 'composer.json presente' },
+    ];
+
+    const content = await this.readSafe(join(rootDir, composerJson.path));
+    if (content) {
+      try {
+        const parsed: { require?: Record<string, string> } = JSON.parse(content);
+        if (parsed.require?.['laravel/framework']) {
+          technologies.push({
+            category: 'framework',
+            name: 'Laravel',
+            evidence: `${composerJson.path} declara dependencia "laravel/framework"`,
+          });
+        }
+      } catch {
+        // composer.json inválido — nos quedamos solo con el lenguaje detectado arriba.
       }
     }
 
@@ -82,6 +163,11 @@ export class TechDetectorService {
       '.rb': 'Ruby',
       '.cs': 'C#',
       '.php': 'PHP',
+      '.rs': 'Rust',
+      '.kt': 'Kotlin',
+      '.kts': 'Kotlin',
+      '.swift': 'Swift',
+      '.scala': 'Scala',
     };
 
     let bestExtension: string | null = null;
@@ -96,8 +182,8 @@ export class TechDetectorService {
     return bestExtension ? extensionToLanguage[bestExtension] : null;
   }
 
-  private async detectFromPackageJson(rootDir: string): Promise<DetectedTechnology[]> {
-    const content = await this.readSafe(join(rootDir, 'package.json'));
+  private async detectFrameworksFromPackageJson(rootDir: string, packageJsonPath: string): Promise<DetectedTechnology[]> {
+    const content = await this.readSafe(join(rootDir, packageJsonPath));
     if (!content) return [];
 
     let parsed: { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
@@ -108,16 +194,14 @@ export class TechDetectorService {
     }
 
     const allDeps = { ...parsed.dependencies, ...parsed.devDependencies };
-    const technologies: DetectedTechnology[] = [
-      { category: 'language', name: 'JavaScript/TypeScript', evidence: 'package.json presente' },
-    ];
+    const technologies: DetectedTechnology[] = [];
 
     for (const [dep, frameworkName] of Object.entries(FRAMEWORK_DEPENDENCY_HINTS)) {
       if (allDeps[dep]) {
         technologies.push({
           category: 'framework',
           name: frameworkName,
-          evidence: `package.json declara dependencia "${dep}"`,
+          evidence: `${packageJsonPath} declara dependencia "${dep}"`,
         });
       }
     }

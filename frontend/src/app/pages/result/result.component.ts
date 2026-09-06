@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AnalysisService } from '../../core/analysis.service';
 import { MermaidDiagramComponent } from '../../shared/mermaid-diagram.component';
-import type { AnalysisRecord } from '../../core/models';
+import type { AnalysisRecord, DetectedTechnology } from '../../core/models';
 
 @Component({
   selector: 'app-result',
@@ -39,5 +39,9 @@ export class ResultComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  frameworkName(technologies: DetectedTechnology[]): string | null {
+    return technologies.find((t) => t.category === 'framework')?.name ?? null;
   }
 }
