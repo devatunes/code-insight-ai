@@ -26,9 +26,22 @@ export class TechDetectorService {
   async detect(rootDir: string, files: FileTreeEntry[]): Promise<DetectedTechnology[]> {
     const technologies: DetectedTechnology[] = [];
 
-    const packageJson = files.find((f) => f.path === 'package.json');
-    if (packageJson) {
-      technologies.push(...(await this.detectFromPackageJson(rootDir)));
+    // No solo la raíz: en un monorepo (backend/package.json, frontend/package.json,
+    // sin package.json en la raíz o con uno vacío de solo scripts) el framework
+    // real vive en los manifiestos anidados, no en el de más arriba.
+    const packageJsonFiles = files.filter((f) => f.name === 'package.json');
+    if (packageJsonFiles.length > 0) {
+      technologies.push({ category: 'language', name: 'JavaScript/TypeScript', evidence: 'package.json presente' });
+
+      const seenFrameworks = new Set<string>();
+      for (const packageJson of packageJsonFiles) {
+        const frameworks = await this.detectFrameworksFromPackageJson(rootDir, packageJson.path);
+        for (const framework of frameworks) {
+          if (seenFrameworks.has(framework.name)) continue;
+          seenFrameworks.add(framework.name);
+          technologies.push(framework);
+        }
+      }
     }
 
     const pomXml = files.find((f) => f.path === 'pom.xml');
@@ -96,8 +109,8 @@ export class TechDetectorService {
     return bestExtension ? extensionToLanguage[bestExtension] : null;
   }
 
-  private async detectFromPackageJson(rootDir: string): Promise<DetectedTechnology[]> {
-    const content = await this.readSafe(join(rootDir, 'package.json'));
+  private async detectFrameworksFromPackageJson(rootDir: string, packageJsonPath: string): Promise<DetectedTechnology[]> {
+    const content = await this.readSafe(join(rootDir, packageJsonPath));
     if (!content) return [];
 
     let parsed: { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
@@ -108,16 +121,14 @@ export class TechDetectorService {
     }
 
     const allDeps = { ...parsed.dependencies, ...parsed.devDependencies };
-    const technologies: DetectedTechnology[] = [
-      { category: 'language', name: 'JavaScript/TypeScript', evidence: 'package.json presente' },
-    ];
+    const technologies: DetectedTechnology[] = [];
 
     for (const [dep, frameworkName] of Object.entries(FRAMEWORK_DEPENDENCY_HINTS)) {
       if (allDeps[dep]) {
         technologies.push({
           category: 'framework',
           name: frameworkName,
-          evidence: `package.json declara dependencia "${dep}"`,
+          evidence: `${packageJsonPath} declara dependencia "${dep}"`,
         });
       }
     }

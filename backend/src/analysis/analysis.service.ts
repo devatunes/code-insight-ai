@@ -5,6 +5,7 @@ import { StaticAnalysisService } from '../static-analysis/static-analysis.servic
 import { AI_PROVIDER, type AiProvider } from '../ai/ai-provider.interface.js';
 import { HistoryService } from '../history/history.service.js';
 import type { AnalysisRecord } from '../history/analysis-record.types.js';
+import { parseRepoUrl } from '../ingestion/repo-url.js';
 
 @Injectable()
 export class AnalysisService {
@@ -42,9 +43,15 @@ export class AnalysisService {
     }
   }
 
-  /** "https://github.com/nestjs/typescript-starter(.git)" → "typescript-starter" */
+  /**
+   * "https://github.com/nestjs/typescript-starter(.git)" → "typescript-starter".
+   * Usa cloneUrl (ya sin el sufijo /tree/<rama>) — tomar el último segmento
+   * de la URL cruda daría el nombre de la rama, no el del repo, para URLs
+   * copiadas del navegador mirando una rama específica.
+   */
   private projectNameFromUrl(repoUrl: string): string {
-    const lastSegment = repoUrl.replace(/\/+$/, '').split('/').pop() ?? repoUrl;
+    const { cloneUrl } = parseRepoUrl(repoUrl);
+    const lastSegment = cloneUrl.split('/').pop() ?? cloneUrl;
     return lastSegment.replace(/\.git$/, '');
   }
 }
