@@ -1,0 +1,246 @@
+<title>Sustentación Code Insight AI</title>
+<style>
+  :root{
+    --bg:#f6f4ef;
+    --surface:#ffffff;
+    --border:#e3ddd0;
+    --ink:#211f1c;
+    --ink-soft:#5b5546;
+    --accent:#0f7b6c;
+    --accent-soft:#e4f1ee;
+    --mono-bg:#efece3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17181a;
+      --surface:#1f2123;
+      --border:#33352f;
+      --ink:#ece8dd;
+      --ink-soft:#a7a191;
+      --accent:#4fd3b8;
+      --accent-soft:#1c2e2a;
+      --mono-bg:#25271f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17181a;
+    --surface:#1f2123;
+    --border:#33352f;
+    --ink:#ece8dd;
+    --ink-soft:#a7a191;
+    --accent:#4fd3b8;
+    --accent-soft:#1c2e2a;
+    --mono-bg:#25271f;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", -apple-system, sans-serif;
+    padding:56px 20px 80px;
+  }
+  main{max-width:760px;margin:0 auto}
+
+  header{margin-bottom:44px}
+  .eyebrow{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12.5px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:"Space Grotesk", "IBM Plex Sans", sans-serif;
+    font-size:clamp(28px,5vw,38px);
+    line-height:1.15;
+    margin:0 0 12px;
+    text-wrap:balance;
+    letter-spacing:-.01em;
+  }
+  .meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    font-size:14px;
+    color:var(--ink-soft);
+    margin:0;
+  }
+  .meta strong{color:var(--ink);font-weight:600}
+
+  .timebar{
+    margin-top:22px;
+    display:flex;
+    height:8px;
+    border-radius:5px;
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .timebar span{display:block;height:100%}
+  .timebar .seg-1{background:var(--accent);opacity:.35;flex:1}
+  .timebar .seg-2{background:var(--accent);opacity:.55;flex:2}
+  .timebar .seg-3{background:var(--accent);opacity:.75;flex:2}
+  .timebar .seg-4{background:var(--accent);opacity:.95;flex:2}
+  .timebar .seg-5{background:var(--accent);opacity:.5;flex:1}
+  .timebar-labels{
+    display:flex;
+    justify-content:space-between;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+
+  .slide{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:26px 28px 24px;
+    margin-bottom:18px;
+  }
+  .slide-head{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    margin-bottom:14px;
+  }
+  .num{
+    font-family:"Space Grotesk",sans-serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--accent);
+    background:var(--accent-soft);
+    border-radius:999px;
+    width:30px;height:30px;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .slide h2{
+    font-family:"Space Grotesk",sans-serif;
+    font-size:20px;
+    margin:0;
+    flex:1;
+    text-wrap:balance;
+  }
+  .time{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .slide ul{
+    margin:0;
+    padding-left:20px;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+  }
+  .slide li{
+    font-size:15px;
+    line-height:1.55;
+  }
+  .slide li::marker{color:var(--accent)}
+  code{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.9em;
+    background:var(--mono-bg);
+    padding:1.5px 5px;
+    border-radius:4px;
+  }
+  strong{font-weight:600}
+
+  footer{
+    margin-top:36px;
+    padding-top:18px;
+    border-top:1px solid var(--border);
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+</style>
+
+<main>
+  <header>
+    <p class="eyebrow">Sustentación · lunes 2026-09-07</p>
+    <h1>Code Insight AI — guion de 5 diapositivas</h1>
+    <p class="meta">
+      <span><strong>8 min</strong> totales</span>
+      <span>Orden fijo del reto: Problema → Arquitectura → Solución → Demo → Mejoras futuras</span>
+    </p>
+    <div class="timebar">
+      <span class="seg-1"></span><span class="seg-2"></span><span class="seg-3"></span><span class="seg-4"></span><span class="seg-5"></span>
+    </div>
+    <div class="timebar-labels">
+      <span>1 min</span><span>2 min</span><span>2 min</span><span>2 min</span><span>1 min</span>
+    </div>
+  </header>
+
+  <section class="slide">
+    <div class="slide-head">
+      <span class="num">1</span>
+      <h2>Problema</h2>
+      <span class="time">~1 min</span>
+    </div>
+    <ul>
+      <li>El reto: analizar un repositorio de código fuente e inferir automáticamente su funcionamiento y arquitectura — común en empresas con muchos repos sin documentación actualizada.</li>
+      <li>Entrada: URL Git pública (o ZIP). Salida: resumen funcional, tecnologías, arquitectura inferida (uno de 6 patrones), componentes identificados, hallazgos.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="slide-head">
+      <span class="num">2</span>
+      <h2>Arquitectura</h2>
+      <span class="time">~2 min</span>
+    </div>
+    <ul>
+      <li><strong>Pipeline híbrido:</strong> heurística local determinista (hechos verificables: lenguaje, framework, componentes) + Claude (interpreta y redacta, nunca inventa los hechos). Justifica el criterio de "exactitud de hallazgos".</li>
+      <li><strong>Backend NestJS + Frontend Angular</strong>, patrón <strong>Strategy/Adapter</strong> para proveedores de IA (Claude funcional, OpenAI/Gemini/Ollama como stubs).</li>
+      <li><strong>AWS:</strong> CloudFront+S3, ALB+ECS Fargate en VPC privada, NAT Gateway (necesario para clonar repos públicos), DynamoDB — una sola arquitectura pensada para escalar, sin versión "barata" descartable.</li>
+      <li><strong>Seguridad:</strong> API key en <code>SSM</code> (nunca en código), Security Group del ALB restringido a IPs de CloudFront.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="slide-head">
+      <span class="num">3</span>
+      <h2>Solución implementada</h2>
+      <span class="time">~2 min</span>
+    </div>
+    <ul>
+      <li>Funcionalidades completas: análisis end-to-end + diagrama Mermaid + historial consultable (DynamoDB).</li>
+      <li><strong>Probado contra 23 repos públicos reales</strong> de lenguajes/arquitecturas distintas (Java, Python, Ruby, Go, C#, PHP, Rust, Kotlin, Elixir, Scala, React, Vue, NestJS) — varios bugs de heurística encontrados y corregidos en el camino (ej. Java no detectaba controllers por su convención PascalCase; ahora sí).</li>
+      <li>Límites de seguridad probados de verdad: repo de ~1.5GB (<code>kubernetes/kubernetes</code>) rechazado limpio por el límite de tamaño.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="slide-head">
+      <span class="num">4</span>
+      <h2>Demo</h2>
+      <span class="time">~2 min</span>
+    </div>
+    <ul>
+      <li>Video corto: pegar URL → ver resultado (resumen, arquitectura, diagrama, componentes, hallazgos) → historial.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="slide-head">
+      <span class="num">5</span>
+      <h2>Mejoras futuras</h2>
+      <span class="time">~1 min</span>
+    </div>
+    <ul>
+      <li>Completar carga de ZIP (hoy cascarón).</li>
+      <li>Desarrollar un proveedor de IA <strong>local real</strong> (Ollama) — hoy es stub; daría independencia de red/costo para repos sensibles o entornos sin salida a internet.</li>
+      <li>Ampliar soporte de framework/componentes a stacks que hoy no cubrimos (ej. .NET más profundo, Swift, Dart) — <code>Go</code> ya está cubierto (detección de framework vía <code>go.mod</code> y convención de nombre de archivo).</li>
+      <li>Observabilidad más profunda: hoy ya hay <code>Logger</code> de NestJS en los puntos clave + errores tipados (<code>BadRequestException</code>, etc.) agregados en CloudWatch Logs; falta métricas/dashboards, tracing distribuido (X-Ray) y alarmas.</li>
+      <li>Minería supervisada de heurística: usar el historial (heurística vs. veredicto de Claude) para sugerir reglas nuevas, siempre con revisión humana antes de aplicarlas.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Guion de apoyo para armar la plantilla propia — no reemplaza las diapositivas, es el contenido base de cada una.
+  </footer>
+</main>
