@@ -1,0 +1,312 @@
+<title>Solución implementada - Code Insight AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #f6f4ef;
+    --surface: #ffffff;
+    --surface-2: #efece3;
+    --border: #e3ddd0;
+    --ink: #211f1c;
+    --ink-soft: #5b5546;
+    --accent: #0f7b6c;
+    --accent-soft: #e4f1ee;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --display: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181a;
+      --surface: #1f2123;
+      --surface-2: #25271f;
+      --border: #33352f;
+      --ink: #ece8dd;
+      --ink-soft: #a7a191;
+      --accent: #4fd3b8;
+      --accent-soft: #1c2e2a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181a;
+    --surface: #1f2123;
+    --surface-2: #25271f;
+    --border: #33352f;
+    --ink: #ece8dd;
+    --ink-soft: #a7a191;
+    --accent: #4fd3b8;
+    --accent-soft: #1c2e2a;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    margin: 0;
+    padding: 48px 24px 64px;
+  }
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  header { display: flex; flex-direction: column; gap: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(26px, 4vw, 32px);
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 70ch;
+    line-height: 1.6;
+  }
+
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 20px 16px; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  figcaption strong { color: var(--ink); font-weight: 600; }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 2px;
+    text-wrap: balance;
+  }
+  .section-note { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 6px; line-height: 1.55; }
+
+  .pages {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 720px) { .pages { grid-template-columns: 1fr; } }
+  .page-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .page-card .step {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .page-card h3 { font-family: var(--display); font-size: 15.5px; margin: 0; font-weight: 600; }
+  .page-card p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; margin: 0; }
+  .page-card ul { margin: 4px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .page-card li { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .page-card li::marker { color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code, .section-note code { font-family: var(--mono); font-size: 0.92em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  .status { font-family: var(--mono); font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .status.ok { color: var(--accent); }
+  .status.stub { color: var(--ink-soft); }
+
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  @media (max-width: 640px) { .specs { grid-template-columns: repeat(2, 1fr); } }
+  .spec { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .spec .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); font-weight: 600; }
+  .spec .v { font-family: var(--mono); font-size: 13.5px; color: var(--ink); }
+
+  section { display: flex; flex-direction: column; gap: 10px; }
+</style>
+
+<div class="page">
+  <header>
+    <span class="eyebrow">Sustentación · Solución implementada</span>
+    <h1>Code Insight AI — cómo funciona la solución</h1>
+    <p class="subtitle">
+      De una URL de repositorio público a un análisis completo: qué pasa en
+      cada paso, qué hace cada pantalla del frontend, y qué tecnologías y
+      patrones de arquitectura reconoce el motor hoy.
+    </p>
+  </header>
+
+  <figure>
+    <svg viewBox="0 0 1080 300" role="img" aria-label="Diagrama de flujo: el cliente envía una URL de repositorio; el backend la clona (ingesta); una heurística local extrae hechos duros del código; Claude interpreta esos hechos y redacta el análisis; el resultado se muestra en el frontend y, en paralelo, se guarda en el historial de DynamoDB.">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+
+      <!-- paso 1: cliente -->
+      <rect x="10" y="90" width="150" height="70" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"></rect>
+      <text x="85" y="118" text-anchor="middle" font-family="var(--display)" font-size="13" font-weight="700" fill="var(--ink)">Cliente</text>
+      <text x="85" y="136" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--ink-soft)">pega URL Git</text>
+
+      <!-- paso 2: ingesta -->
+      <rect x="215" y="90" width="150" height="70" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"></rect>
+      <text x="290" y="112" text-anchor="middle" font-family="var(--display)" font-size="13" font-weight="700" fill="var(--ink)">Ingesta</text>
+      <text x="290" y="129" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">git clone --depth 1</text>
+      <text x="290" y="143" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">timeout 45s · máx 200MB</text>
+
+      <!-- paso 3: heuristica -->
+      <rect x="420" y="90" width="160" height="70" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"></rect>
+      <text x="500" y="112" text-anchor="middle" font-family="var(--display)" font-size="13" font-weight="700" fill="var(--ink)">Heurística local</text>
+      <text x="500" y="129" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">lenguaje · framework</text>
+      <text x="500" y="143" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">componentes por convención</text>
+
+      <!-- paso 4: IA -->
+      <rect x="630" y="90" width="150" height="70" rx="10" fill="var(--surface)" stroke="#D97757" stroke-width="1.5"></rect>
+      <circle cx="655" cy="105" r="10" fill="#D97757"></circle>
+      <text x="655" y="109" text-anchor="middle" font-family="var(--sans)" font-size="11" font-weight="700" fill="#ffffff">✳</text>
+      <text x="713" y="112" text-anchor="middle" font-family="var(--display)" font-size="13" font-weight="700" fill="var(--ink)">Claude</text>
+      <text x="705" y="130" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">interpreta hechos,</text>
+      <text x="705" y="144" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">nunca el código fuente</text>
+
+      <!-- paso 5: resultado -->
+      <rect x="835" y="50" width="150" height="60" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"></rect>
+      <text x="910" y="76" text-anchor="middle" font-family="var(--display)" font-size="12.5" font-weight="700" fill="var(--ink)">Resultado</text>
+      <text x="910" y="93" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">frontend Angular</text>
+
+      <!-- historial -->
+      <rect x="835" y="150" width="150" height="60" rx="10" fill="var(--surface)" stroke="var(--border)" stroke-width="1.5"></rect>
+      <text x="910" y="176" text-anchor="middle" font-family="var(--display)" font-size="12.5" font-weight="700" fill="var(--ink)">Historial</text>
+      <text x="910" y="193" text-anchor="middle" font-family="var(--mono)" font-size="9.5" fill="var(--ink-soft)">DynamoDB</text>
+
+      <!-- flechas -->
+      <g fill="none" stroke="var(--ink-soft)" stroke-width="1.5" color="var(--ink-soft)">
+        <line x1="160" y1="125" x2="212" y2="125" marker-end="url(#arr)"></line>
+        <line x1="365" y1="125" x2="417" y2="125" marker-end="url(#arr)"></line>
+        <line x1="580" y1="125" x2="627" y2="125" marker-end="url(#arr)"></line>
+        <path d="M780,118 C 805,105 810,90 833,80" marker-end="url(#arr)"></path>
+        <path d="M780,132 C 805,150 810,165 833,175" marker-end="url(#arr)"></path>
+      </g>
+      <text x="908" y="230" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--ink-soft)">se guardan en paralelo — un documento por análisis</text>
+    </svg>
+    <figcaption>
+      <strong>Pipeline híbrido, no "todo se lo preguntamos a la IA":</strong>
+      la heurística local extrae los hechos duros (lenguaje, framework,
+      componentes por carpeta o por nombre de archivo) de forma
+      determinista y testeada — Claude solo los interpreta para redactar el
+      resumen funcional, inferir la arquitectura (uno de 6 patrones) y
+      generar el diagrama Mermaid. Esto es lo que sostiene la exactitud de
+      los hallazgos frente al criterio de evaluación del reto.
+    </figcaption>
+  </figure>
+
+  <section>
+    <h2>Qué hace cada pantalla del frontend</h2>
+    <p class="section-note">Angular 18 standalone, tres páginas con carga perezosa (<code>loadComponent</code>).</p>
+    <div class="pages">
+      <div class="page-card">
+        <span class="step">01 · Analizar</span>
+        <h3>Cargar repositorio</h3>
+        <p>Formulario con un campo: URL Git pública. La carga de ZIP tiene el endpoint y la interfaz ya definidos, pero el procesamiento es un cascarón a propósito (fuera del alcance real de esta entrega).</p>
+      </div>
+      <div class="page-card">
+        <span class="step">02 · Resultado</span>
+        <h3>Análisis completo</h3>
+        <p>Resumen funcional, información general (lenguaje/framework/cantidad de archivos), arquitectura inferida con su evidencia, componentes identificados, hallazgos (riesgos y recomendaciones), y el diagrama Mermaid generado por Claude.</p>
+      </div>
+      <div class="page-card">
+        <span class="step">03 · Historial</span>
+        <h3>Análisis previos</h3>
+        <p>Lista de análisis anteriores guardados en DynamoDB, consultable en cualquier momento sin tener que repetir el clone ni la llamada a Claude.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tecnologías y frameworks soportados</h2>
+    <p class="section-note">Todo esto es heurística <strong>determinista</strong> — no algo que decide Claude — por eso es exacto, testeado con fixtures, y extendible sin tocar el prompt de la IA.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Manifiesto</th><th>Lenguaje</th><th>Frameworks detectados</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>package.json</code> (cualquier nivel)</td><td>JavaScript/TypeScript</td><td>NestJS, Express, Angular, React, Vue, Next.js</td></tr>
+          <tr><td><code>pom.xml</code></td><td>Java</td><td>Spring Boot</td></tr>
+          <tr><td><code>requirements.txt</code> / <code>pyproject.toml</code> / <code>Pipfile</code> / <code>setup.py</code> / <code>manage.py</code></td><td>Python</td><td>Django (por <code>manage.py</code> o manifiesto), Flask</td></tr>
+          <tr><td><code>Gemfile</code></td><td>Ruby</td><td>Ruby on Rails</td></tr>
+          <tr><td><code>composer.json</code></td><td>PHP</td><td>Laravel</td></tr>
+          <tr><td><code>go.mod</code></td><td>Go</td><td>Gin, Echo, Fiber, Beego, Gorilla Mux</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-note">
+      El lenguaje <strong>principal</strong> además se calcula por conteo de extensión
+      de archivo, y cubre C#, Rust, Kotlin, Swift, Scala y Dart — aunque
+      estos todavía no tienen detección de framework ni de componentes por
+      convención propia.
+    </p>
+  </section>
+
+  <section>
+    <h2>Proveedores de IA — patrón Strategy/Adapter</h2>
+    <p class="section-note">Un contrato único (<code>analyze(facts)</code>); cambiar de proveedor es cambiar una variable de entorno, no tocar lógica de negocio.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Proveedor</th><th>Estado</th><th>Nota</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Claude (Anthropic)</td><td><span class="status ok">● Funcional</span></td><td>El único conectado a una API real en esta entrega.</td></tr>
+          <tr><td>OpenAI</td><td><span class="status stub">○ Adapter stub</span></td><td>Mismo contrato, sin API real conectada.</td></tr>
+          <tr><td>Gemini</td><td><span class="status stub">○ Adapter stub</span></td><td>Candidato natural a activar después (tier gratuito).</td></tr>
+          <tr><td>Ollama (modelo local)</td><td><span class="status stub">○ Adapter stub</span></td><td>Pensado para no depender de una API externa.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="specs">
+    <div class="spec"><span class="k">Clone</span><span class="v">--depth 1 --single-branch</span></div>
+    <div class="spec"><span class="k">Timeout de clone</span><span class="v">45s</span></div>
+    <div class="spec"><span class="k">Límite de tamaño</span><span class="v">200 MB</span></div>
+    <div class="spec"><span class="k">Validación de URL</span><span class="v">solo HTTPS · IPs loopback bloqueadas</span></div>
+    <div class="spec"><span class="k">Cleanup</span><span class="v">directorio temporal borrado siempre (éxito o error)</span></div>
+    <div class="spec"><span class="k">Patrones de arquitectura</span><span class="v">6 · Monolito, MVC, Clean, Hexagonal, Microservicios, N-Capas</span></div>
+  </div>
+</div>
