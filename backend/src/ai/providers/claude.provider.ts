@@ -83,7 +83,11 @@ export class ClaudeProvider implements AiProvider {
   async analyze(facts: AnalysisFacts): Promise<AiAnalysisResult> {
     const message = await this.getClient().messages.create({
       model: this.model,
-      max_tokens: 2048,
+      // 2048 se quedaba corto en repos con muchos componentes/hallazgos: Claude
+      // genera el JSON en el orden del schema y "architectureDiagramMermaid" es
+      // el último campo, así que un corte por límite de tokens rompe justo el
+      // diagrama (ausente o con sintaxis incompleta) antes que cualquier otro campo.
+      max_tokens: 4096,
       tools: [RETURN_ANALYSIS_TOOL],
       tool_choice: { type: 'tool', name: 'return_analysis' },
       messages: [
@@ -99,8 +103,37 @@ export class ClaudeProvider implements AiProvider {
       throw new InternalServerErrorException('Claude no devolvió un análisis estructurado.');
     }
 
+    if (message.stop_reason === 'max_tokens') {
+      this.logger.warn('La respuesta de Claude se cortó por max_tokens — puede venir incompleta.');
+    }
+
     this.logger.log(`Análisis generado con ${this.model}`);
-    return toolUse.input as AiAnalysisResult;
+    const result = toolUse.input as AiAnalysisResult;
+    result.architectureDiagramMermaid = this.sanitizeMermaid(
+      result.architectureDiagramMermaid,
+      result.inferredArchitecture,
+    );
+    return result;
+  }
+
+  /**
+   * "required" en el tool schema es solo una guía para el modelo, Anthropic
+   * no lo fuerza — a veces Claude omite este campo (es el último del schema)
+   * o entrega un texto que no es Mermaid válido. Si el frontend recibe eso,
+   * Mermaid no siempre lanza una excepción atrapable: en varios casos
+   * renderiza su propio SVG de "Syntax error" como si fuera un resultado
+   * exitoso. Mejor nunca dejar pasar un valor dudoso.
+   */
+  private sanitizeMermaid(diagram: string | undefined, architecture: string): string {
+    const looksValid =
+      typeof diagram === 'string' &&
+      diagram.trim().length > 0 &&
+      /^(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram)/i.test(diagram.trim());
+
+    if (looksValid) return diagram!.trim();
+
+    this.logger.warn('Claude no devolvió un diagrama Mermaid válido — se usa uno de respaldo.');
+    return `graph TD\n  A[Repositorio] --> B[Arquitectura: ${architecture}]`;
   }
 
   private buildPrompt(facts: AnalysisFacts): string {
@@ -111,7 +144,10 @@ export class ClaudeProvider implements AiProvider {
       '"return_analysis". No inventes archivos, componentes ni tecnologías que no estén',
       'en los hechos. Si la evidencia es débil o ambigua, elegí el patrón más probable',
       'y decilo con evidencia honesta (podés incluir "Monolito" si no hay señales claras',
-      'de otro patrón).',
+      'de otro patrón). Completá SIEMPRE los 5 campos de la herramienta, sin',
+      'omitir ninguno — en particular "architectureDiagramMermaid" nunca puede',
+      'quedar vacío: si la evidencia es poca, generá igual un diagrama simple',
+      '(por ejemplo "graph TD" con 2-3 nodos) en vez de omitirlo.',
       '',
       'HECHOS:',
       JSON.stringify(facts, null, 2),
