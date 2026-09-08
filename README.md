@@ -266,6 +266,16 @@ nunca en el repo.
   correspondiente dentro del `provider.ts` ya existente.
 - **Sin autenticación.** No lo pide el alcance mínimo del reto; el
   historial queda compartido para cualquiera que use la app.
+- **Rate limit por IP en `POST /analyses`** (`analysis/rate-limit.guard.ts`)
+  — 5 análisis cada 10 minutos por IP (configurable por
+  `ANALYSIS_RATE_LIMIT_MAX` / `ANALYSIS_RATE_LIMIT_WINDOW_MS`). Sin esto,
+  al no haber autenticación, cualquiera con la URL pública podía disparar
+  `POST /analyses` en loop — cada llamada dispara un `git clone` real más
+  una llamada real (con costo) a la API de Anthropic. Es un guard propio en
+  memoria, no `@nestjs/throttler`: su última versión (6.5.0) todavía no
+  declara soporte de peer dependency para `@nestjs/common` v12 (el que ya
+  usa este proyecto). Solo protege `POST /analyses` — el historial
+  (`GET /analyses`, `GET /analyses/:id`) no tiene costo real que proteger.
 
 ## Qué haría con más tiempo
 
@@ -296,3 +306,7 @@ nunca en el repo.
   (`BadRequestException`, `PayloadTooLargeException`, etc., no throws
   genéricos) agregados en CloudWatch Logs — falta métricas/dashboards
   propios (CloudWatch Metrics), tracing distribuido (X-Ray) y alarmas.
+- Complementar el rate limit por IP con un tope global (diario/mensual,
+  contador en DynamoDB) y una regla de AWS WAF a nivel de CloudFront —
+  protege contra abuso distribuido desde muchas IPs distintas, algo que un
+  límite por IP no puede frenar solo.
